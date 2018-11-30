@@ -1,6 +1,8 @@
 # Final_Robotics_Project
 
-This project implements autonomous navigation of turtlebot2 in unknown maze using wall follower algorithm and hector_slam. The maze contains objects, which will be detected by RealSense
+This project implements autonomous navigation of turtlebot2 in unknown maze using wall follower algorithm and hector_slam. The maze contains objects, which will be detected by RealSense2 Camera. 
+
+Once detected, The robot will also be able to navigate to a given object autonomously.
 
 ## Installation
 
