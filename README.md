@@ -8,10 +8,12 @@ Once detected, The robot will also be able to navigate to a given object autonom
 
 These steps are needed to perform only for fresh development on new machine.
 
-*Intel RealSense2 camera
+* Intel RealSense2 camera
+
 To use the intel realsense in ROS, see: https://github.com/IntelRealSense/librealsense/blob/master/doc/installation.md
 
-*hls_lfcd_lds 360 laser scanner
+* hls_lfcd_lds 360 laser scanner
+
 Follow the installation steps given in: https://github.com/rawanazim/hls_lfcd_lds_driver
 
 This will install hls driver in the system, Use this in place of Hokyuo scanner (For verifying the SLAM with this, Just run hector_slam_launch tutorial.launch)
