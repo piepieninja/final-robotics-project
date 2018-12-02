@@ -1,19 +1,15 @@
-# Final_Robotics_Project
+# Robotics Final Project
 
-This project implements autonomous navigation of turtlebot2 in unknown maze using wall follower algorithm and hector_slam. The maze contains objects, which will be detected by RealSense2 Camera. 
 
-Once detected, The robot will also be able to navigate to a given object autonomously.
+### Requirements
 
-## Installation
+follow the realsense installation I fixed. Make sure this can run: `roslaunch realsense2_camera rs_rgbd_low_fps.launch`
 
-These steps are needed to perform only for fresh development on new machine.
 
-* Intel RealSense2 camera
+### Realsense Needed Topics
 
-To use the intel realsense in ROS, see: https://github.com/IntelRealSense/librealsense/blob/master/doc/installation.md
+for the depth info: `/camera/aligned_depth_to_color/image_raw`
 
-* hls_lfcd_lds 360 laser scanner
+for the color info: `/camera/color/image_raw`
 
-Follow the installation steps given in: https://github.com/rawanazim/hls_lfcd_lds_driver
 
-This will install hls driver in the system, Use this in place of Hokyuo scanner (For verifying the SLAM with this, Just run hector_slam_launch tutorial.launch)
