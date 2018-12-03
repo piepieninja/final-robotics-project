@@ -45,7 +45,9 @@ def find_squares(img):
 def is_red(x,y):
     global redness
     red_sum = 0
-    divisor = 0    
+    divisor = 0
+    green_ish = cv_image[x,y][1]
+    blue_ish = cv_image[x,y][2]
     red_sum += cv_image[x  ,y  ][0]*1.2
     red_sum += cv_image[x-1,y  ][0]
     red_sum += cv_image[x+1,y  ][0]
@@ -57,7 +59,7 @@ def is_red(x,y):
     red_sum += cv_image[x  ,y+1][0]
     redness = float(red_sum)/float(9.0)
     #print redness
-    if redness > 110:
+    if redness > 150 and green_ish < redness/2 and blue_ish < redness/2:
         return True
     else:
         return False    
