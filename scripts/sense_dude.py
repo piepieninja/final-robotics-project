@@ -59,7 +59,7 @@ def is_red(x,y):
     red_sum += cv_image[x  ,y+1][0]
     redness = float(red_sum)/float(9.0)
     #print redness
-    if redness > 150 and green_ish < redness/2 and blue_ish < redness/2:
+    if redness > 150 and green_ish < 100 and blue_ish < 100:
         return True
     else:
         return False    
