@@ -1,11 +1,13 @@
 <launch>
 
-  <include file="$(find turtlebot_bringup)/launch/minimal.launch">
-    <!--  <arg name="rgb_processing" value="false" />
-    <arg name="depth_registration" value="false" />
-    <arg name="depth_processing" value="false" />
-    
-    <arg name="scan_topic" value="/scan" /> -->
-  </include>
+  <node pkg="final-robotics-project" type="maze.py" name="MazeSolverNode" output="screen">
+    </node>
+   <group>
+    <include file="$(find hector_slam_launch)/launch/tutorial.launch"/>
+   </group>
+   <machine name="turtlebot_robot" address="172.23.79.128" default="true" user="herobot" password="UGARobotics!"/>
+   <!--<node pkg="urg_node" name="urg_node" type="urg_node" output="screen" machine="turtlebot_robot">-->
+   <include file="$(find hls_lfcd_lds_driver)/launch/hlds_laser.launch" machine="turtlebot_robot"></include>
+   <include file="$(find turtlebot_bringup)/launch/minimal.launch" machine="turtlebot_robot"></include>
 
 </launch>
