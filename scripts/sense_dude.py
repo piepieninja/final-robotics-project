@@ -82,7 +82,7 @@ def update_depth(data):
         barray = bytearray(b)
         depth = struct.unpack('>H', barray)
         dist = depth[0]/10
-        if dist > 0 and dist < 1000 and is_red(x_mid,y_mid):
+        if dist > 0 and dist < 200 and is_red(x_mid,y_mid):
             print str(count) + " | " + str((x_mid,y_mid)) + " | "+ str(dist) + "cm |" + str(cv_image[x_mid,y_mid]) + " | redness: " + str(redness) 
             fov = 69.4
             d_pix = fov/1920.0
