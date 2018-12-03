@@ -3,17 +3,16 @@
 import roslib
 import rospy
 import struct
+import math
 import cv2 as cv
 import numpy as np
+from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 from std_msgs.msg import String
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, PointCloud2
 from cv_bridge import CvBridge, CvBridgeError
 
-
-#def __init__(self):
-#    self.bridge = CvBridge()
-
 squares = []
+real_guys = [] # the ones we want to actually send around in ros
 
 # from opencv examples
 def angle_cos(p0, p1, p2):
@@ -46,25 +45,28 @@ def find_squares(img):
 def is_red(x,y):
     global redness
     red_sum = 0
-    divisor = 0
-    for val_x in range(x-2,x+2):
-        for val_y in range(y-2,y+2):
-            # give a boost to the mid pixel
-            if val_x == x and val_y == y:
-                red_sum += cv_image[val_x,val_y][0]/10
-            red_sum += cv_image[val_x,val_y][0]
-            divisor += 1
-    redness = float(red_sum)/float(divisor)
+    divisor = 0    
+    red_sum += cv_image[x  ,y  ][0]*1.2
+    red_sum += cv_image[x-1,y  ][0]
+    red_sum += cv_image[x+1,y  ][0]
+    red_sum += cv_image[x-1,y-1][0]
+    red_sum += cv_image[x-1,y+1][0]
+    red_sum += cv_image[x+1,y-1][0]
+    red_sum += cv_image[x+1,y+1][0]
+    red_sum += cv_image[x  ,y-1][0]
+    red_sum += cv_image[x  ,y+1][0]
+    redness = float(red_sum)/float(9.0)
     #print redness
-    if redness > 95:
+    if redness > 110:
         return True
     else:
-        return False
+        return False    
+
+
     
-            
 def update_depth(data):
-    #print 'yeet'
-    #print squares
+    pub = rospy.Publisher('sense_dude_square_loc', Pose, queue_size=10)
+    global real_guys
     count = 0
     for s in squares:
         x1 = s[0][0]
@@ -73,42 +75,64 @@ def update_depth(data):
         y2 = s[2][0]
         x_mid = (x1 + x2)/2
         y_mid = (y1 + y2)/2
-        
-        #print data.height
-        #print data.width
-        #print data.encoding
-        #print data.step
-        
         # uint16 is depth stored in mm
         b = []        
         b.append(data.data[y_mid*data.step + x_mid])
         b.append(data.data[y_mid*data.step + (x_mid + 1)])
         barray = bytearray(b)
-        #print barray
-        #depth = int.from_bytes(b, byteorder='big', signed=False)
         depth = struct.unpack('>H', barray)
         dist = depth[0]/10
-        #print (depth[0]/10)
-        
-        if dist > 20 and dist < 1000 and is_red(x_mid,y_mid):
-            print str(count) + " | " + str((x_mid,y_mid)) + " | "+ str(dist) + "cm |" + str(cv_image[x_mid,y_mid]) + " | redness: " + str(redness)  
+        if dist > 0 and dist < 1000 and is_red(x_mid,y_mid):
+            print str(count) + " | " + str((x_mid,y_mid)) + " | "+ str(dist) + "cm |" + str(cv_image[x_mid,y_mid]) + " | redness: " + str(redness) 
+            fov = 69.4
+            d_pix = fov/1920.0
+            foc = 1.93 # mm
+            half_max = (1920.0/2.0)*d_pix
+            x_d = d_pix*x_mid - half_max # gets the angle off center that poits to the square
+            x_u = math.sin(math.radians(x_d))
+            y_u = math.cos(math.radians(x_d))
+            z_u = 0.0
+            #
+            dist_x = dist*x_u
+            dist_y = dist*y_u
+            dist_z = dist*z_u
+            #
+            location = Pose()
+            location.position.x = dist_x
+            location.position.y = dist_y
+            location.position.z = dist_z
+            pub.publish(location)
+            #print location
         count += 1
-        
-        
-    #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
 
 def sense_symbol(data):
     #print 'oof'
     bridge = CvBridge()
     global cv_image
     try:
-        cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
+        cv_image = bridge.imgmsg_to_cv2(data, "rgb8")
     except CvBridgeError as e:
         print(e)
     wot = find_squares(cv_image)
     #print wot
     # do shape detection here
-        
+
+def export_3d_loc(data):
+    global real_guys
+    pub = rospy.Publisher('sense_dude_square_loc', Pose, queue_size=10)
+    for loc in real_guys:
+        x = loc[0]
+        y = loc[1]
+        b = data.data[y*data.row_step + x*data.point_step]
+        barray = bytearray(b)
+        z = struct.unpack('>B', barray)
+        print z
+        #print "point_step: " + str(data.point_step) + " | row_step: " + str(data.row_step)
+        #print data.width
+        #print data.height
+        #print loc
+    real_guys = []
+    
 def listener():
         
     # In ROS, nodes are uniquely named. If two nodes with the same
@@ -120,10 +144,12 @@ def listener():
 
     depth_maybe = "camera/aligned_depth_to_color/image_raw"
     color_maybe = "camera/color/image_raw"
+    point_maybe = "camera/depth_registered/points"
     
-    rospy.Subscriber(depth_maybe, Image,  update_depth)
-    rospy.Subscriber(color_maybe, Image,  sense_symbol)
-
+    rospy.Subscriber(depth_maybe, Image, update_depth)
+    rospy.Subscriber(color_maybe, Image, sense_symbol)
+    #rospy.Subscriber(point_maybe, PointCloud2, export_3d_loc)
+    
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
     
